@@ -1,0 +1,64 @@
+# Experiment goal: Analyze hybrid-thinking model with Llama-3.1-8B-Instruct. Train a reasoning tuned Llama model as phase 1 model. Use the 2/9 of 80k total samples(only /think samples)
+# Design & Settings:
+# 1. Model: Llama-3.1-8B-Instruct
+# 2. Training Mode: phase1 of 2-phase training
+# 3. Dataset: A /think-only dataset, from the 2/9 of 80k total samples(only /think samples).
+# 4. System prompt: empty string
+
+
+### model
+model_name_or_path: meta-llama/Llama-3.1-8B-Instruct
+# image_max_pixels: 262144
+# video_max_pixels: 16384
+# trust_remote_code: true
+
+### method
+stage: sft
+do_train: true
+finetuning_type: full
+freeze_vision_tower: true
+freeze_multi_modal_projector: true
+freeze_language_model: false
+deepspeed: examples/deepspeed/ds_z3_config.json
+
+### dataset
+dataset: ht-analysis_phase1
+template: llama3
+cutoff_len: 16384
+max_samples: 100000000
+overwrite_cache: true
+preprocessing_num_workers: 16
+dataloader_num_workers: 4
+# default_system: "You MUST obey the mode flag at the end of user’s message.\n- If the flag is /think, output exactly:\n<think>\n{YOUR REASONING}\n</think>\n{FINAL_ANSWER}\n- If the flag is /no_think, output exactly:\n<think>\n</think>\n{FINAL_ANSWER}\nRules: (1) In /no_think, the think block is exactly `<think></think>` — no spaces/newlines inside. (2) Never put reasoning outside <think>...</think>. (3) Always place the final answer after the think block."
+default_system: ""
+
+
+### output
+output_dir: saves/ht-analysis/Llama_instruct_phase1
+save_only_model: true 
+logging_steps: 1
+save_steps: 4000
+plot_loss: true
+overwrite_output_dir: false
+# save_only_model: false
+report_to: wandb  # choices: [none, wandb, tensorboard, swanlab, mlflow]
+run_name: ht-analysis_Llama_instruct_phase1
+
+### train
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 12
+learning_rate: 1.0e-5
+num_train_epochs: 3.0
+lr_scheduler_type: cosine
+warmup_ratio: 0.1
+bf16: true
+ddp_timeout: 180000000
+resume_from_checkpoint: null
+# flash_attn: fa2
+
+
+### eval
+# val_size: 0.1
+# per_device_eval_batch_size: 1
+# eval_strategy: steps
+# eval_steps: 500

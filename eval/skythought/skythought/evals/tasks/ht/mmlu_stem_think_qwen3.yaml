@@ -1,0 +1,9 @@
+handler: mmlu
+dataset_path: TIGER-Lab/MMLU-STEM
+dataset_subset: default
+dataset_split: test
+question_key: question
+answer_key: answer
+templating_parameters:
+  template: "Please reason step by step, and put your final answer within \\boxed{{}}. {prompt} /think"
+  # "Return your final response within \\boxed{{}}. {prompt}"
